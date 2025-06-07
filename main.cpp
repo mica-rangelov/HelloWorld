@@ -77,6 +77,7 @@ int main()
     
    */
    B b;
+      cout << "Djole, Milica, Jelena i Ivica Rangelov" << endl;
    cin.get(); // Pauza da vidimo ispis pre zatvaranja programa
     return 0;
 
