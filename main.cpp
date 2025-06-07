@@ -76,8 +76,9 @@ int main()
 
     
    */
-   B b;
-    return 0;
+
+   cout << "Djole, Milica, Jelena i Ivica Rangelov" << endl;
+   cin.get();
 }
 
 
