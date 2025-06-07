@@ -78,6 +78,7 @@ int main()
    */
    B b;
     return 0;
+    cin.get(); // Pauza da vidimo ispis pre zatvaranja programa
 }
 
 
