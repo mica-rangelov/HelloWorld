@@ -1,88 +1,74 @@
-/******************************************************************************
-
-Welcome to GDB Online.
-GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
-C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
-Code, Compile, Run and Debug online from anywhere in world.
-
-*******************************************************************************/
-/*#include <iostream>
-#include "Matrica.hpp"
-
-using namespace std;
-
-int main(){
-    // Pravimo matricu m1
-    Matrica m1(3, 4);
-   // Dodajemo elemente
-    m1.dodajElement(0, 0, 10);
-    m1.dodajElement(0, 1, 20);
-    m1.dodajElement(0, 2, 30);
-    m1.dodajElement(0, 3, 40);
-
-    m1.dodajElement(1, 0, 50);
-    m1.dodajElement(1, 1, 60);
-    m1.dodajElement(1, 2, 70);
-    m1.dodajElement(1, 3, 80);
-
-    m1.dodajElement(2, 0, 90);
-    m1.dodajElement(2, 1, 11);
-    m1.dodajElement(2, 2, 22);
-    m1.dodajElement(2, 3, 33);
-
-    cout << "Stampanje matrice dimenzija 3 x 4" << endl;
-    cout << m1 << endl;
-
-    cin.get(); // Pauza da vidimo ispis pre zatvaranja programa
-
-    return 0;
-}*/
-
 #include <iostream>
+#include <filesystem>
+#include <fstream>
+#include <unordered_set>
 
 using namespace std;
-#include "Krug.hpp"
-#include "Pravougaonik.hpp"
-#include "Valjak.hpp"
-#include "NoviValjak.hpp"
-class A{
-    public:
-    A(){cout<<"KA"<<endl;}
-    A(int){cout<<"KPA"<<endl;}
-};
-class B : public A{
-    private:
-    Krug k1;
-    Pravougaonik k2;
-    Krug k3;
-    public:
-    B() : A(3), k1(), k2(), k3() {cout<<"KB"<<endl;}
-};
+using namespace std::filesystem;
 
+string getAvailableFileName(const path& destDir, const string& filename) {
+    path filePath = destDir / filename;
+    if (!exists(filePath)) {
+        return filename;
+    }
 
+    string stem = path(filename).stem().string();
+    string extension = path(filename).extension().string();
+    int counter = 1;
 
-int main()
-{
-    /*
-    Krug k1;
-    cout << endl;
-    cout << endl;
-    cout << endl;
-    Pravougaonik p1;
-    cout << endl;
-    cout << endl;
-    cout << endl;
-    NoviValjak nv1;
-
-    
-   */
-
-   cout << "Djole, Milica, Jelena i Ivica Rangelov" << endl;
-   cin.get();
+    while (true) {
+        string newName = stem + "_" + to_string(counter) + extension;
+        filePath = destDir / newName;
+        if (!exists(filePath)) {
+            return newName;
+        }
+        counter++;
+    }
 }
 
+int main() {
+    string sourcePath, destinationPath;
 
+    // Input source and destination paths
+    cout << "Enter source directory path: ";
+    cin >> sourcePath;
 
+    cout << "Enter destination directory path: ";
+    cin >> destinationPath;
 
+    if (!exists(sourcePath) || !is_directory(sourcePath)) {
+        cerr << "Invalid source directory." << endl;
+        return 1;
+    }
 
+    // Create destination directory if it doesn't exist
+    create_directories(destinationPath);
 
+    // Log file in the destination folder
+    ofstream logFile(destinationPath + "/copied_files.txt");
+
+    try {
+        for (const auto& entry : recursive_directory_iterator(sourcePath)) {
+            if (is_regular_file(entry)) {
+                string originalName = entry.path().filename().string();
+                string availableName = getAvailableFileName(destinationPath, originalName);
+                path destFilePath = path(destinationPath) / availableName;
+
+                copy_file(entry.path(), destFilePath, copy_options::overwrite_existing);
+                logFile << destFilePath.string() << endl;
+            }
+        }
+
+        cout << "Files copied successfully. Log saved to: "
+             << destinationPath + "/copied_files.txt" << endl;
+
+    } catch (const filesystem_error& e) {
+        cerr << "Filesystem error: " << e.what() << endl;
+        return 2;
+    } catch (const exception& e) {
+        cerr << "General error: " << e.what() << endl;
+        return 3;
+    }
+
+    return 0;
+}
